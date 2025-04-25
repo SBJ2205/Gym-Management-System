@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <script defer src="{{ url_for('static', filename='dashboard.js') }}"></script>
+    
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    
+</head>
+<body>
+    <!-- Login Success Popup -->
+    <div id="login-success-popup" class="login-success-popup">
+        <div class="popup-content">
+            <!-- Green Tick Mark -->
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <p>Login Successful!</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Welcome, Admin!</h1>
+
+        <!-- Quick Stats -->
+        <div class="stats">
+            <div class="stat-box">
+                <h2>{{ total_members }}</h2>
+                <p>Total Members</p>
+            </div>
+            <div class="stat-box">
+                <h2>{{ total_trainers }}</h2>
+                <p>Total Trainers</p>
+            </div>
+            <div class="stat-box">
+                <h2>₹{{ total_payments }}</h2>
+                <p>Completed Payments</p>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="menu">
+            <!-- Manage Members Dropdown -->
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Manage Members</a>
+                <div class="dropdown-content">
+                    <a href="#" id="add-members-btn">Add Members</a>
+                    
+                    <a href="#" id="view-members-btn">View Members</a>
+                </div>
+            </div>
+
+            <!-- Manage Trainers Section -->
+            <div class="dropdown">
+                <a href="#" class="dropdown-toggle">Manage Trainers</a>
+                <div class="dropdown-content">
+                    <a href="#" id="add-trainers-btn">Add Trainers</a>
+                    <a href="#" id="view-trainers-btn">View Trainers</a>
+                </div>
+            </div>
+            
+                <!-- Manage Payments Section -->
+            <div class="dropdown dropdown-payments">
+                <a href="#" class="dropdown-toggle">Manage Payments</a>
+                <div class="dropdown-content">
+                    <a href="#" id="view-payments-btn">View Payment History</a>
+                    <a href="#" id="add-payment-btn">Record New Payment</a>
+                </div>
+            </div>
+            
+            <!-- To this dropdown menu -->
+            <div class="dropdown dropdown-attendance">
+                <a href="#" class="dropdown-toggle">Attendance</a>
+                <div class="dropdown-content">
+                    <a href="#" id="member-attendance-btn">Member Attendance</a>
+                    <a href="#" id="trainer-attendance-btn">Trainer Attendance</a>
+                </div>
+            </div>
+            <a href="{{ url_for('admin.admin_logout') }}" class="logout-btn">Logout</a>
+        </div>
+
+        <!-- Add Member Form (Initially Hidden) -->
+        <!-- Add Member Form (Updated) -->
+        <div class="add-member-form-container" id="add-member-form-container" style="display: none;">
+            <h2>Add New Member</h2>
+            <form id="add-member-form">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" required>
+                
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="last_name" required>
+                
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" required>
+
+                <label for="gender">Gender:</label>
+                <select id="gender" name="gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="address">Address:</label>
+                <textarea id="address" name="address" required></textarea>
+
+                <label for="emergency_contact">Emergency Contact:</label>
+                <input type="tel" id="emergency_contact" name="emergency_contact" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            
+                <label for="phone">Phone:</label>
+                <input type="tel" id="phone" name="phone" required>
+            
+                <label for="membership_plan">Membership Plan:</label>
+                <select id="membership_plan" name="membership_plan" required>
+                    <option value="basic">Basic</option>
+                    <option value="premium">Premium</option>
+                    <option value="vip">VIP</option>
+                </select>
+                
+                <label for="membership_expiry">Membership Expiry:</label>
+                <input type="date" id="membership_expiry" name="membership_expiry" required>
+
+                <label for="trainer">Trainer:</label>
+                <select id="trainer" name="trainer_id">
+                    <option value="">Select Trainer</option>
+                    <!-- Trainers will be populated dynamically -->
+                </select>
+            
+                <div class="form-actions">
+                    <button type="button" id="cancel-member-btn" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="submit-btn" class="btn btn-primary">Add Member</button>
+                </div>
+            </form>
+        </div>
+        
+            <!-- Member Attendance Container -->
+        <div class="attendance-container" id="member-attendance-container" style="display: none;">
+            <div class="attendance-header">
+                <h2>Member Attendance</h2>
+                
+                <div class="attendance-controls">
+                    <input type="date" id="member-attendance-date" value="{{ datetime.utcnow().date().isoformat() }}">
+                    <button type="button" id="close-member-attendance-btn" class="btn btn-secondary">Close</button>
+                    <button id="save-member-attendance" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="member-attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Member ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                        </tr>
+                    </thead>
+                    <tbody id="member-attendance-body">
+                        <!-- Attendance data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Trainer Attendance Container -->
+        <div class="attendance-container" id="trainer-attendance-container" style="display: none;">
+            <div class="attendance-header">
+                <h2>Trainer Attendance</h2>
+                <div class="attendance-controls">
+                    <input type="date" id="trainer-attendance-date" value="{{ datetime.utcnow().date().isoformat() }}">
+                    <button type="button" id="close-trainer-attendance-btn" class="btn btn-secondary">Close</button>
+                    <button id="save-trainer-attendance" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table id="trainer-attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Trainer ID</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trainer-attendance-body">
+                        <!-- Attendance data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("submit-btn").addEventListener("click", function(event) {
+                event.preventDefault();  // Prevent default form submission
+            
+                const formData = {
+                    first_name: document.getElementById("first_name").value,
+                    last_name: document.getElementById("last_name").value,
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value,
+                    phone: document.getElementById("phone").value,
+                    membership_expiry: document.getElementById("membership_expiry").value,
+                    membership_plan: document.getElementById("membership_plan").value,
+                    trainer_id: document.getElementById("trainer") ? document.getElementById("trainer").value : undefined,
+                    age: document.getElementById("age") ? document.getElementById("age").value : null,  // ✅ Fix: Prevent "undefined" error
+                    gender: document.getElementById("gender").value,
+                    address: document.getElementById("address").value,
+                    emergency_contact: document.getElementById("emergency_contact").value
+                };
+                
+            
+               // console.log("Form Data:", formData);  // ✅ Debugging step to see collected values
+            
+                fetch("/admin/add_member", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Member added successfully!");
+                        document.getElementById("add-member-form").reset();  // ✅ Reset form after success
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+            
+        </script>
+        
+
+        
+        <!-- Member Table (Initially Hidden) -->
+       <!-- Member Table (Initially Hidden) -->
+        <div class="member-table-container" id="member-table-container" style="display: none;">
+            <div class="table-header">
+                <h2>Member List</h2>
+                <button type="button" id="close-member-table-btn" class="btn btn-secondary">Close</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Member ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Address</th>
+                        <th>Emergency Contact</th>
+                        <th>Trainer ID</th>
+                        <th>Membership Expiry</th>
+                    </tr>
+                </thead>
+                <tbody id="member-table-body">
+                    <!-- Members will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const dropdownToggle = document.querySelector(".dropdown-toggle");
+            const addMembersBtn = document.getElementById("add-members-btn");
+            const viewMembersBtn = document.getElementById("view-members-btn");
+            const addMemberFormContainer = document.getElementById("add-member-form-container");
+            const memberTableContainer = document.getElementById("member-table-container");
+            const memberTableBody = document.getElementById("member-table-body");
+
+            // Show login success popup
+            const loginSuccessPopup = document.getElementById("login-success-popup");
+            if (loginSuccessPopup) {
+                loginSuccessPopup.classList.add("active");
+                setTimeout(() => {
+                    loginSuccessPopup.classList.remove("active");
+                }, 2000);
+            }
+
+            // Toggle dropdown menu visibility
+            dropdownToggle.addEventListener("click", function (event) {
+                event.preventDefault();
+                dropdownToggle.nextElementSibling.classList.toggle("active");
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener("click", function (event) {
+                if (!event.target.closest(".dropdown")) {
+                    dropdownToggle.nextElementSibling.classList.remove("active");
+                }
+            });
+
+            // Handle Add Members button click
+            addMembersBtn.addEventListener("click", function (event) {
+                event.preventDefault();
+                // Hide the member table if it's open
+                memberTableContainer.style.display = "none";
+                // Show the Add Member form
+                addMemberFormContainer.style.display = addMemberFormContainer.style.display === 'none' ? 'block' : 'none';
+            });
+
+                        // Handle View Members button click
+            viewMembersBtn.addEventListener("click", function (event) {
+                event.preventDefault();
+                
+                // Hide Add Member form if it's open
+                addMemberFormContainer.style.display = "none";
+
+                // Show or hide the Member Table
+                if (memberTableContainer.style.display === "none" || memberTableContainer.style.display === "") {
+                    memberTableContainer.style.display = "block"; // Show the table
+
+                    // Fetch member data from Flask backend
+                    fetch("/admin/get_members")
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Fetched Data:", data); // Debugging: Check received data
+                    
+                            if (!Array.isArray(data)) {  
+                                console.error("❌ Error: Expected an array, but got:", data);
+                                return;
+                            }
+                    
+                            const memberTableBody = document.getElementById("member-table-body");
+                            memberTableBody.innerHTML = "";  // Clear previous data
+                    
+                            data.forEach(member => {
+                                const row = `<tr>
+                                    <td>${member.id}</td>
+                                    <td>${member.first_name} ${member.last_name}</td>
+                                    <td>${member.email}</td>
+                                    <td>${member.phone}</td>
+                                    <td>${member.age || "N/A"}</td>
+                                    <td>${member.gender || "N/A"}</td>
+                                    <td>${member.address || "N/A"}</td>
+                                    <td>${member.emergency_contact || "N/A"}</td>
+                                    <td>${member.trainer_id || "Unassigned"}</td>
+                                    <td>${member.membership_expiry}</td>
+                                </tr>`;
+                                memberTableBody.innerHTML += row;
+                            });
+                        })
+                        .catch(error => console.error("🔥 Fetch Error:", error));
+                
+
+                } else {
+                    memberTableContainer.style.display = "none"; // Hide the table
+                }
+            });
+
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+        <!-- Add Trainer Form -->
+    <div class="add-trainer-form-container" id="add-trainer-form-container" style="display: none;">
+        <h2>Add New Trainer</h2>
+        <form id="add-trainer-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="trainer-first-name">First Name*</label>
+                    <input type="text" id="trainer-first-name" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="trainer-last-name">Last Name*</label>
+                    <input type="text" id="trainer-last-name" name="last_name" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="trainer-email">Email*</label>
+                    <input type="email" id="trainer-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="trainer-phone">Phone Number</label>
+                    <input type="tel" id="trainer-phone" name="phone_number" pattern="[0-9]{10}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="trainer-password">Password*</label>
+                <input type="password" id="trainer-password" name="password" required minlength="8">
+                <small class="form-hint">Minimum 8 characters</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="trainer-expertise">Expertise</label>
+                    <select id="trainer-expertise" name="expertise">
+                        <option value="">Select Expertise</option>
+                        <option value="Strength Training">Strength Training</option>
+                        <option value="Cardio">Cardio</option>
+                        <option value="Yoga">Yoga</option>
+                        <option value="Pilates">Pilates</option>
+                        <option value="CrossFit">CrossFit</option>
+                        <option value="Nutrition">Nutrition</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="trainer-availability">Availability</label>
+                    <input type="text" id="trainer-availability" name="availability" placeholder="e.g. Mon-Fri: 9 AM - 6 PM">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="trainer-certifications">Certifications</label>
+                <textarea id="trainer-certifications" name="certifications" rows="3" placeholder="List certifications separated by commas"></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancel-trainer-btn">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Trainer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Trainer Table -->
+    <div class="trainer-table-container" id="trainer-table-container" style="display: none;">
+        <div class="table-header">
+            <h2>Trainer List</h2>
+            <div class="table-actions">
+                <input type="text" id="trainer-search" placeholder="Search trainers...">
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Expertise</th>
+                        <th>Availability</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="trainer-table-body">
+                    <!-- Trainer data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer">
+            <div class="pagination-controls">
+                <button class="btn btn-sm" id="prev-trainer-page">Previous</button>
+                <span id="trainer-page-info">Page 1 of 5</span>
+                <button class="btn btn-sm" id="next-trainer-page">Next</button>
+            </div>
+        </div>
+    </div>
+   
+    <!-- Trainer Detail Modal (hidden by default) -->
+    <div class="modal" id="trainer-detail-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Trainer Details</h3>
+            <div class="modal-body" id="trainer-detail-content">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="payment-table-container" id="payment-table-container" style="display: none;">
+        <div class="table-header">
+            <h2>Payment History</h2>
+            <div class="table-controls">
+                <input type="text" id="payment-search" placeholder="Search payments...">
+                <select id="payment-filter">
+                    <option value="all">All Payments</option>
+                    <option value="recent">Last 30 Days</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="payments-table">
+                <thead>
+                    <tr>
+                        <th>Payment ID</th>
+                        <th>Member</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Method</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-table-body">
+                    <!-- Payments will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+        <div class="table-footer">
+            <div class="pagination">
+                <button id="prev-payment-page" disabled>Previous</button>
+                <span id="payment-page-info">Page 1</span>
+                <button id="next-payment-page">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="add-payment-form-container" id="add-payment-form-container" style="display: none;">
+        <h2>Record New Payment</h2>
+        <form id="add-payment-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="payment-member">Member*</label>
+                    <select id="payment-member" name="member_id" required>
+                        <option value="">Select Member</option>
+                        
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment-amount">Amount (₹)*</label>
+                    <input type="number" id="payment-amount" name="amount" min="0" step="0.01" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="payment-date">Date*</label>
+                    <input type="date" id="payment-date" name="payment_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="payment-method">Payment Method*</label>
+                    <select id="payment-method" name="payment_method" required>
+                        <option value="">Select Method</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="Debit Card">Debit Card</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="payment-notes">Notes</label>
+                <textarea id="payment-notes" name="notes" rows="3"></textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" id="cancel-payment-btn" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary">Record Payment</button>
+            </div>
+        </form>
+    </div>
+
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("add-trainer-form").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent form submission
+        
+                // Get input values
+                let firstName = document.getElementById("first_name")?.value.trim();
+                let lastName = document.getElementById("last_name")?.value.trim();
+                let email = document.getElementById("email")?.value.trim();
+                let expertise = document.getElementById("expertise")?.value.trim();
+                let phoneNumber = document.getElementById("phone_number")?.value.trim();
+                let availability = document.getElementById("availability")?.value.trim();
+                let certifications = document.getElementById("certifications")?.value.trim();
+        
+                // Debugging: Check if first_name is undefined/null
+                
+        
+                let trainerData = {
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    expertise: expertise,
+                    phone_number: phoneNumber,
+                    availability: availability,
+                    certifications: certifications
+                };
+        
+                // Debugging: Log data before sending
+                console.log("Trainer Data:", trainerData);
+        
+                fetch("/admin/add_trainer", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(trainerData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert("Trainer added successfully!");
+                    document.getElementById("add-trainer-form").reset(); // Reset form
+                    loadTrainers(); // Refresh trainer list
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("Error: " + error.message);
+                });
+            });
+        });
+        
+        
+                
+
+        // Load Trainers Function
+        function loadTrainers(page = 1, search = '') {
+            fetch(`/admin/get_trainers?page=${page}&search=${encodeURIComponent(search)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('trainer-table-body');
+                    tbody.innerHTML = '';  // Clear old data
+
+                    if (!Array.isArray(data)) {
+                        console.error("Unexpected API response:", data);
+                        return;
+                    }
+
+                    data.forEach(trainer => {
+                        const row = `
+                        <tr>
+                            <td>${trainer.id || trainer.trainer_id}</td>
+                            <td>${trainer.first_name} ${trainer.last_name}</td>
+                            <td>${trainer.email}</td>
+                            <td>${trainer.expertise || 'N/A'}</td>
+                            <td>${trainer.availability || 'N/A'}</td>
+                            <td>
+                                <button class="btn-action btn-view" onclick="viewTrainerDetails('${trainer.id || trainer.trainer_id}')">View</button>
+                                <button class="btn-action btn-edit" onclick="editTrainer('${trainer.id || trainer.trainer_id}')">Edit</button>
+                                <button class="btn-action btn-delete" onclick="confirmDeleteTrainer('${trainer.id || trainer.trainer_id}')">Delete</button>
+                            </td>
+                        </tr>`;
+                        tbody.insertAdjacentHTML("beforeend", row);
+                    });
+                })
+                .catch(error => console.error("Error fetching trainers:", error));
+        }
+
+        
+
+        // View Trainer Details
+        function viewTrainerDetails(trainerId) {
+            fetch(`/admin/get_trainers/${trainerId}`)
+                .then(response => response.json())
+                .then(trainer => {
+                    const modalContent = `
+                        <div class="trainer-detail">
+                            <h4>${trainer.first_name} ${trainer.last_name}</h4>
+                            <p><strong>ID:</strong> ${trainer.trainer_id}</p>
+                            <p><strong>Email:</strong> ${trainer.email}</p>
+                            <p><strong>Phone:</strong> ${trainer.phone_number || 'N/A'}</p>
+                            <p><strong>Expertise:</strong> ${trainer.expertise || 'N/A'}</p>
+                            <p><strong>Availability:</strong> ${trainer.availability || 'N/A'}</p>
+                            <p><strong>Certifications:</strong> ${trainer.certifications || 'N/A'}</p>
+                        </div>`;
+                    
+                    document.getElementById('trainer-detail-content').innerHTML = modalContent;
+                    document.getElementById('trainer-detail-modal').style.display = 'flex';
+                });
+        }
+
+                // Edit Trainer Function
+        function editTrainer(trainerId) {
+            // First fetch the trainer data
+            fetch(`/admin/get_trainer/${trainerId}`)
+                .then(response => response.json())
+                .then(trainer => {
+                    // Populate the add trainer form with existing data
+                    document.getElementById('trainer-first-name').value = trainer.first_name;
+                    document.getElementById('trainer-last-name').value = trainer.last_name;
+                    document.getElementById('trainer-email').value = trainer.email;
+                    document.getElementById('trainer-phone').value = trainer.phone || trainer.phone_number || '';
+                    document.getElementById('trainer-expertise').value = trainer.expertise || '';
+                    document.getElementById('trainer-availability').value = trainer.availability || '';
+                    document.getElementById('trainer-certifications').value = trainer.certifications || '';
+                    
+                    // Change the form to update mode
+                    const form = document.getElementById('add-trainer-form');
+                    form.dataset.mode = 'edit';
+                    form.dataset.trainerId = trainerId;
+                    
+                    // Change the button text
+                    const submitBtn = form.querySelector('.btn-primary');
+                    submitBtn.textContent = 'Update Trainer';
+                    
+                    // Show the form
+                    document.getElementById('add-trainer-form-container').style.display = 'block';
+                    document.getElementById('trainer-table-container').style.display = 'none';
+                    
+                    // Scroll to the form
+                    document.getElementById('add-trainer-form-container').scrollIntoView();
+                })
+                .catch(error => {
+                    console.error('Error fetching trainer for edit:', error);
+                    alert('Error loading trainer data for editing');
+                });
+        }
+
+        // Modify the form submission handler to handle both add and edit
+        document.getElementById('add-trainer-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const isEditMode = form.dataset.mode === 'edit';
+            const trainerId = form.dataset.trainerId;
+            
+            const trainerData = {
+                first_name: document.getElementById('trainer-first-name').value.trim(),
+                last_name: document.getElementById('trainer-last-name').value.trim(),
+                email: document.getElementById('trainer-email').value.trim(),
+                phone_number: document.getElementById('trainer-phone').value.trim(),
+                expertise: document.getElementById('trainer-expertise').value.trim(),
+                availability: document.getElementById('trainer-availability').value.trim(),
+                certifications: document.getElementById('trainer-certifications').value.trim()
+            };
+            
+            const url = isEditMode ? `/admin/update_trainer/${trainerId}` : '/admin/add_trainer';
+            const method = isEditMode ? 'PUT' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trainerData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(isEditMode ? 'Trainer updated successfully!' : 'Trainer added successfully!');
+                    form.reset();
+                    loadTrainers();
+                    document.getElementById('add-trainer-form-container').style.display = 'none';
+                    document.getElementById('trainer-table-container').style.display = 'block';
+                } else {
+                    alert('Error: ' + (data.error || 'Something went wrong'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            });
+        });
+
+                // Confirm and Delete Trainer
+        function confirmDeleteTrainer(trainerId) {
+            if (confirm('Are you sure you want to delete this trainer?')) {
+                deleteTrainer(trainerId);
+            }
+        }
+
+        // Delete Trainer Function
+        function deleteTrainer(trainerId) {
+            fetch(`/admin/delete_trainer/${trainerId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Trainer deleted successfully!');
+                    loadTrainers();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete trainer'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting trainer');
+            });
+        }
+
+        // Close Modal
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            document.getElementById('trainer-detail-modal').style.display = 'none';
+        });
+
+        // Search Functionality
+        document.getElementById('trainer-search').addEventListener('input', function(e) {
+            loadTrainers(1, e.target.value);
+        });
+
+        // Pagination
+        document.getElementById('prev-trainer-page').addEventListener('click', function() {
+            const currentPage = parseInt(document.getElementById('trainer-page-info').textContent.split(' ')[1]);
+            if (currentPage > 1) {
+                loadTrainers(currentPage - 1, document.getElementById('trainer-search').value);
+            }
+        });
+
+        document.getElementById('next-trainer-page').addEventListener('click', function() {
+            const pageInfo = document.getElementById('trainer-page-info').textContent.split(' ');
+            const currentPage = parseInt(pageInfo[1]);
+            const totalPages = parseInt(pageInfo[3]);
+            
+            if (currentPage < totalPages) {
+                loadTrainers(currentPage + 1, document.getElementById('trainer-search').value);
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTrainers(); // Ensure trainers load initially
+
+            const searchInput = document.getElementById("trainer-search");
+            if (searchInput) {
+                searchInput.addEventListener("input", function (e) {
+                    const searchQuery = e.target.value.trim();
+                    loadTrainers(1, searchQuery);
+                });
+            } else {
+                console.error("Search input field not found");
+            }
+        });
+
+    </script>
+
+ 
+    
+</body>
+</html>
+
+
+
+
+
+
+
+
+

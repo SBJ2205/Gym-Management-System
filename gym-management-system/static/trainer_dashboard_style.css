@@ -1,0 +1,136 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.sidebar {
+    background-color: #343a40;
+    color: white;
+    height: 100vh;
+    position: fixed;
+    padding-top: 20px;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 5px;
+    border-radius: 5px;
+    padding: 10px 15px;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.sidebar .nav-link.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+}
+
+.main {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+.content-section {
+    padding: 20px 0;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.rounded-circle {
+    border: 3px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+    .main {
+        margin-left: 0;
+    }
+}
+
+/* Plan details styling */
+#modal-plan-details {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+/* Activity list styling */
+#recent-activity .list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 10px 15px;
+}
+
+#recent-activity .list-group-item:first-child {
+    border-top: none;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 5px 8px;
+}

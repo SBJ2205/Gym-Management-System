@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trainer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4bb543;
+            --warning: #ffcc00;
+            --danger: #f44336;
+            --gray: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        /* Login Success Popup */
+        .login-success-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .login-success-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .login-success-popup.active .popup-content {
+            transform: translateY(0);
+        }
+        
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            display: block;
+        }
+        
+        .checkmark__circle {
+            stroke: var(--success);
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke: var(--success);
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-miterlimit: 10;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke-check 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+        
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        @keyframes stroke-check {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        h1 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-align: center;
+            position: relative;
+            padding-bottom: 15px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin: 20px 0 15px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 25px 0 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideInLeft 0.8s ease-out;
+        }
+        
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+        }
+        
+        .profile-info {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .profile-info p {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        
+        .profile-info .expertise {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        ul li {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--accent);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        ul li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+        
+        ul li:last-child {
+            margin-bottom: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #f1f3ff;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: var(--danger);
+            padding: 10px 20px;
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(244, 67, 54, 0.2);
+        }
+        
+        .logout-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(244, 67, 54, 0.3);
+        }
+        
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--gray);
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .tab:hover:not(.active) {
+            border-bottom: 3px solid var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from { 
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 20px;
+            }
+            
+            .profile-info {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            th, td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .logout-btn {
+                position: static;
+                margin-bottom: 20px;
+                display: inline-flex;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                border-bottom: none;
+            }
+            
+            .tab {
+                border-bottom: none;
+                border-left: 3px solid transparent;
+            }
+            
+            .tab.active {
+                border-bottom: none;
+                border-left: 3px solid var(--primary);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Success Popup -->
+    <div id="login-success-popup" class="login-success-popup">
+        <div class="popup-content">
+            <!-- Green Tick Mark -->
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+            <p>Login Successful!</p>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Logout Button -->
+        <form action="{{ url_for('trainer.trainer_login') }}" method="POST" style="display:inline;">
+            <a href="{{ url_for('trainer.logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            
+        </form>
+        <h1>Welcome, {{ trainer.first_name }} {{ trainer.last_name }}</h1>
+
+        <div class="profile-info">
+            <div>
+                <h3 style="color: white; margin: 0; animation: none;"><i class="fas fa-user-tie"></i> Trainer Profile</h3>
+            </div>
+            <div class="expertise">
+                <i class="fas fa-certificate"></i> {{ trainer.expertise }}
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <div class="tab active" onclick="openTab(event, 'my-members')">My Members</div>
+            <div class="tab" onclick="openTab(event, 'workout-plans')">Workout Plans</div>
+            <div class="tab" onclick="openTab(event, 'diet-plans')">Diet Plans</div>
+            <div class="tab" onclick="openTab(event, 'attendance')">Attendance</div>
+            <div class="tab" onclick="openTab(event, 'feedback')">Member Feedback</div>
+        </div>
+
+        <!-- My Members Tab -->
+        <div id="my-members" class="tab-content active">
+            <div class="section">
+                <h2><i class="fas fa-users"></i> My Members</h2>
+                <ul>
+                    {% for member in trainer.members %}
+                        <li>
+                            <strong>{{ member.first_name }} {{ member.last_name }}</strong>
+                            <p>Email: {{ member.email }}</p>
+                            <p>Phone: {{ member.phone }}</p>
+                            <p>Membership: {{ member.membership_plan }} (Expires: {{ member.membership_expiry.strftime('%d-%m-%Y') }})</p>
+                        </li>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-user-slash"></i>
+                            <p>No members assigned to you yet.</p>
+                        </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Workout Plans Tab -->
+        <div id="workout-plans" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-dumbbell"></i> Create Workout Plan</h2>
+                <form method="POST" action="{{ url_for('trainer.create_workout_plan') }}">
+                    <div class="form-group">
+                        <label for="member">Select Member:</label>
+                        <select id="member" name="member_id" required>
+                            {% for member in trainer.members %}
+                                <option value="{{ member.member_id }}">{{ member.first_name }} {{ member.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="workout_details">Workout Plan Details:</label>
+                        <textarea id="workout_details" name="plan_details" required></textarea>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-save"></i> Save Workout Plan
+                    </button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-list"></i> Existing Workout Plans</h2>
+                <ul>
+                    {% for plan in trainer.workout_plans %}
+                        <li>
+                            <strong>{{ plan.member.first_name }} {{ plan.member.last_name }}</strong>
+                            <p>{{ plan.created_at.strftime('%d-%m-%Y') }}</p>
+                            <p>{{ plan.plan_details }}</p>
+                        </li>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-dumbbell"></i>
+                            <p>No workout plans created yet.</p>
+                        </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Diet Plans Tab -->
+        <div id="diet-plans" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-utensils"></i> Create Diet Plan</h2>
+                <form method="POST" action="{{ url_for('trainer.create_diet_plan') }}">
+                    <div class="form-group">
+                        <label for="diet_member">Select Member:</label>
+                        <select id="diet_member" name="member_id" required>
+                            {% for member in trainer.members %}
+                                <option value="{{ member.member_id }}">{{ member.first_name }} {{ member.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="diet_details">Diet Plan Details:</label>
+                        <textarea id="diet_details" name="diet_details" required></textarea>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-save"></i> Save Diet Plan
+                    </button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-list"></i> Existing Diet Plans</h2>
+                <ul>
+                    {% for plan in trainer.diet_plans %}
+                        <li>
+                            <strong>{{ plan.member.first_name }} {{ plan.member.last_name }}</strong>
+                            <p>{{ plan.created_at.strftime('%d-%m-%Y') }}</p>
+                            <p>{{ plan.diet_details }}</p>
+                        </li>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-utensils"></i>
+                            <p>No diet plans created yet.</p>
+                        </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-clipboard-check"></i> Record Attendance</h2>
+                <form method="POST" action="{{ url_for('trainer.record_attendance') }}">
+                    <div class="form-group">
+                        <label for="attendance_member">Select Member:</label>
+                        <select id="attendance_member" name="member_id" required>
+                            {% for member in trainer.members %}
+                                <option value="{{ member.member_id }}">{{ member.first_name }} {{ member.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="attendance_date">Date:</label>
+                        <input type="date" id="attendance_date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <select id="status" name="status" required>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                            <option value="Late">Late</option>
+                        </select>
+                    </div>
+                    <button type="submit">
+                        <i class="fas fa-check-circle"></i> Record Attendance
+                    </button>
+                </form>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-history"></i> Attendance History</h2>
+                <table>
+                    <tr>
+                        <th>Member</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                    {% for record in trainer.attendance_records %}
+                        <tr>
+                            <td>{{ record.member.first_name }} {{ record.member.last_name }}</td>
+                            <td>{{ record.date.strftime('%d-%m-%Y') }}</td>
+                            <td>{{ record.status }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 30px;">
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <p>No attendance records available.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <!-- Feedback Tab -->
+        <div id="feedback" class="tab-content">
+            <div class="section">
+                <h2><i class="fas fa-comments"></i> Member Feedback</h2>
+                <ul>
+                    {% for feedback in trainer.feedbacks %}
+                        <li>
+                            <strong>{{ feedback.member.first_name }} {{ feedback.member.last_name }}</strong>
+                            <p>{{ feedback.submitted_at.strftime('%d-%m-%Y %H:%M') }}</p>
+                            <p>{{ feedback.feedback_text }}</p>
+                            {% if feedback.admin_response %}
+                                <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                    <strong>Admin Response:</strong>
+                                    <p>{{ feedback.admin_response }}</p>
+                                </div>
+                            {% endif %}
+                        </li>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-comment-slash"></i>
+                            <p>No feedback received yet.</p>
+                        </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show login success popup if redirected from successful login
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('login_success')) {
+                const popup = document.getElementById('login-success-popup');
+                popup.classList.add('active');
+                
+                setTimeout(() => {
+                    popup.classList.remove('active');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }, 3000);
+            }
+        });
+
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>

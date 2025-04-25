@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            position: relative;
+            animation: fadeInBody 1s ease-in-out;
+        }
+
+        @keyframes fadeInBody {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1571902943202-507ec2618e8f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center/cover;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: popUp 1.2s ease-out;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            animation: slideDown 1s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        h1 span {
+            display: block;
+            font-size: 2.5rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            animation: fadeInText 1.2s ease-in;
+        }
+
+        @keyframes fadeInText {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            min-width: 180px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            animation: fadeInButton 1.2s ease forwards;
+        }
+
+        .btn:nth-child(1) { animation-delay: 0.2s; }
+        .btn:nth-child(2) { animation-delay: 0.4s; }
+        .btn:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes fadeInButton {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            transition: all 0.3s ease;
+        }
+
+        .btn:nth-child(1) {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .btn:nth-child(2) {
+            background: linear-gradient(45deg, #ff7e5f, #feb47b);
+        }
+
+        .btn:nth-child(3) {
+            background: linear-gradient(45deg, #11998e, #38ef7d);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h1 span {
+                font-size: 1.8rem;
+            }
+
+            .buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WELCOME TO GYM<br><span>MANAGEMENT SYSTEM</span></h1>
+        <p>Select your login type:</p>
+        <div class="buttons">
+            <a href="/admin/login" class="btn">Admin Login</a>
+            <a href="/member/login" class="btn">Member Login</a>
+            <a href="/trainer/login" class="btn">Trainer Login</a>
+        </div>
+    </div>
+</body>
+</html>
